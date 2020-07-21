@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2015 Mark Charlebois. All rights reserved.
+ *   Copyright (c) 2012-2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,32 +31,65 @@
  *
  ****************************************************************************/
 
-/**
- * @file vfile.cpp
- * Virtual file
- *
- * @author Mark Charlebois <charlebm@gmail.com>
- */
-
 #pragma once
 
-#include "../CDev.hpp"
+#include <drivers/drv_hrt.h>
+#include <lib/perf/perf_counter.h>
+#include <px4_platform_common/px4_config.h>
+#include <px4_platform_common/defines.h>
+#include <px4_platform_common/module.h>
+#include <px4_platform_common/module_params.h>
+#include <px4_platform_common/px4_work_queue/ScheduledWorkItem.hpp>
+#include <systemlib/cpuload.h>
+#include <uORB/Publication.hpp>
+#include <uORB/topics/cpuload.h>
+#include <uORB/topics/task_stack_info.h>
 
-namespace cdev
+namespace load_mon
 {
 
-class VFile : public CDev
+class LoadMon : public ModuleBase<LoadMon>, public ModuleParams, public px4::ScheduledWorkItem
 {
 public:
+	LoadMon();
+	~LoadMon() override;
 
-	static VFile *createFile(const char *fname, mode_t mode);
-	~VFile() = default;
+	static int task_spawn(int argc, char *argv[]);
 
-	ssize_t write(file_t *handlep, const char *buffer, size_t buflen) override;
+	/** @see ModuleBase */
+	static int custom_command(int argc, char *argv[])
+	{
+		return print_usage("unknown command");
+	}
+
+	/** @see ModuleBase */
+	static int print_usage(const char *reason = nullptr);
+
+	void start();
 
 private:
-	VFile(const char *fname, mode_t mode);
-	VFile(const VFile &);
+	/** Do a compute and schedule the next cycle. */
+	void Run() override;
+
+	/** Do a calculation of the CPU load and publish it. */
+	void cpuload();
+
+	/* Calculate stack usage */
+	void stack_usage();
+
+	int _stack_task_index{0};
+
+	uORB::PublicationQueued<task_stack_info_s> _task_stack_info_pub{ORB_ID(task_stack_info)};
+	uORB::Publication<cpuload_s> _cpuload_pub{ORB_ID(cpuload)};
+
+	hrt_abstime _last_idle_time{0};
+	hrt_abstime _last_idle_time_sample{0};
+
+	perf_counter_t _cycle_perf{perf_alloc(PC_ELAPSED, MODULE_NAME": cycle")};
+
+	DEFINE_PARAMETERS(
+		(ParamBool<px4::params::SYS_STCK_EN>) _param_sys_stck_en
+	)
 };
 
-} // namespace cdev
+} // namespace load_mon
