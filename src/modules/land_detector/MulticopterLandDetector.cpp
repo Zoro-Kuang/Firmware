@@ -203,6 +203,7 @@ bool MulticopterLandDetector::_get_ground_contact_state()
 	const bool vz_valid = (lpos_available && _vehicle_local_position.v_z_valid);
 
 	if (_vehicle_control_mode.flag_control_climb_rate_enabled && vz_valid) {
+		// setpoints can briefly be NAN to signal resets, TODO: fix in multicopter position controller
 		if (PX4_ISFINITE(_vehicle_local_position_setpoint.vz)) {
 			_in_descend = (_vehicle_local_position_setpoint.vz >= land_speed_threshold);
 		}
