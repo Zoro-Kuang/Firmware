@@ -114,10 +114,11 @@ private:
 	uORB::Subscription _vehicle_local_position_setpoint_sub{ORB_ID(vehicle_local_position_setpoint)};
 
 	actuator_controls_s               _actuator_controls {};
-	hover_thrust_estimate_s           _hover_thrust_estimate{};
 	vehicle_angular_velocity_s        _vehicle_angular_velocity{};
 	vehicle_control_mode_s            _vehicle_control_mode {};
 	vehicle_local_position_setpoint_s _vehicle_local_position_setpoint {};
+
+	bool _hover_thrust_initialized{false};
 
 	hrt_abstime _min_thrust_start{0};	///< timestamp when minimum trust was applied first
 	hrt_abstime _landed_time{0};
