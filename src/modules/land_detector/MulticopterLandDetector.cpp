@@ -167,7 +167,7 @@ bool MulticopterLandDetector::_get_ground_contact_state()
 	// land speed threshold, 90% of MPC_LAND_SPEED
 	const float land_speed_threshold = 0.9f * math::max(_params.landSpeed, 0.1f);
 
-	bool vertical_movement = false;
+	bool vertical_movement = true;
 
 	if (lpos_available && _vehicle_local_position.v_z_valid) {
 		// Check if we are moving vertically - this might see a spike after arming due to
@@ -194,7 +194,7 @@ bool MulticopterLandDetector::_get_ground_contact_state()
 		_horizontal_movement = (gndspeed > _param_lndmc_xy_vel_max.get());
 
 	} else {
-		_horizontal_movement = false;
+		_horizontal_movement = true;
 	}
 
 
