@@ -167,7 +167,6 @@ bool MulticopterLandDetector::_get_ground_contact_state()
 	// land speed threshold, 90% of MPC_LAND_SPEED
 	const float land_speed_threshold = 0.9f * math::max(_params.landSpeed, 0.1f);
 
-
 	bool vertical_movement = false;
 
 	if (lpos_available && _vehicle_local_position.v_z_valid) {
@@ -213,7 +212,7 @@ bool MulticopterLandDetector::_get_ground_contact_state()
 	}
 
 
-	// low thrust: initially 30% of configured throttle range between min and hover
+	// low thrust: configured throttle range (LNDMC_LOW_T_THR) between min and hover
 	const float sys_low_throttle = _params.minThrottle + (_params.hoverThrottle - _params.minThrottle) *
 				       _param_lndmc_low_t_thr.get();
 	const bool low_thrust = (_actuator_controls.control[actuator_controls_s::INDEX_THROTTLE] <= sys_low_throttle);
